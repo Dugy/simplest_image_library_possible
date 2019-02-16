@@ -4,7 +4,7 @@ A header-only C++ image library to be easily included into small experiments wit
 
 It allows pixel-by-pixel modification of pictures and opening/closing them in a RAII compliant way, nothing else. It's only for making quick experiments in C++.
 
-## Usage
+## Usage
 
 The following code makes the picture dark gray and makes the picture progressively bluer towards bottom-right.
 
