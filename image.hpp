@@ -141,6 +141,19 @@ public:
 				return colours[colour];
 			}
 
+			/*!
+			* /brief Set the colour of a pixel in one line
+			*
+			* /param The blue component
+			* /param The green component
+			* /param The red component
+			*/
+			void setColour(uint8_t blueValue, uint8_t greenValue, uint8_t redValue) {
+				blue = blueValue;
+				green = greenValue;
+				red = redValue;
+			}
+
 			Point() = delete;
 		};
 
