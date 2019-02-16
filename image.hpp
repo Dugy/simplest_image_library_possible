@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string>
 #include <memory>
-#include <iostream>
+#include <exception>
 
 class Image {
 	int height_;
@@ -16,7 +16,7 @@ public:
 	*
 	* /note Default constructed images contain no data and cannot be used for anything
 	*/
-	Image() : height_(0), width_(0) { }
+	inline Image() : height_(0), width_(0) { }
 
 	/*!
 	* /brief Full constructor, the image will be saved by the destructor
@@ -26,7 +26,7 @@ public:
 	* /param The width of the image
 	* /note Use discard() to prevent saving it
 	*/
-	Image(const std::string& name, int height, int width)
+	inline Image(const std::string& name, int height, int width)
 			: height_(height), width_(width), data_(std::make_unique<uint8_t[]>(height * width * 3)), name_(name)
 	{
 		memset(data_.get(), 0, height * width * 3 * sizeof(uint8_t));
@@ -39,7 +39,7 @@ public:
 	* /param The width of the image
 	* /note Use setName() to give it a name so that it could be saved properly
 	*/
-	Image(int height, int width) : Image("", height, width) { }
+	inline Image(int height, int width) : Image("", height, width) { }
 
 	/*!
 	* /brief Constructor from file, the image's dimensions will be set according to the file
@@ -47,11 +47,10 @@ public:
 	* /param Name of the picture (the extension isn't added automatically)
 	* /note Use discard() to prevent the destructor saving with whatever changes that were done
 	*/
-	Image(const std::string& fileName) {
+	inline Image(const std::string& fileName) {
 		FILE* file = fopen(fileName.c_str(), "rb");
 		if (file == nullptr) {
-			std::cerr << "Unknown image: " << fileName << std::endl;
-			exit(1);
+			throw(std::runtime_error("Unknown image: " + fileName));
 		}
 		unsigned char info[54];
 		fread(info, sizeof(unsigned char), 54, file);
@@ -69,7 +68,7 @@ public:
 	/*!
 	* /brief Destructor, will save the file if it was assigned a name
 	*/
-	~Image() {
+	inline ~Image() {
 		if (!name_.empty() && data_)
 			save();
 	}
@@ -80,7 +79,7 @@ public:
 	* /param Name of the picture (the extension isn't added automatically)
 	* /note Setting this to an empty string has the same effect as calling discard()
 	*/
-	void setName(const std::string& newName) {
+	inline void setName(const std::string& newName) {
 		name_ = newName;
 	}
 
@@ -89,14 +88,14 @@ public:
 	*
 	* /return Name of the picture
 	*/
-	const std::string& name() {
+	inline const std::string& name() {
 		return name_;
 	}
 
 	/*!
 	* /brief Removes the image's name, preventing it from being saved
 	*/
-	void discard() {
+	inline void discard() {
 		name_.clear();
 	}
 
@@ -105,7 +104,7 @@ public:
 	*
 	* /return The height in pixels
 	*/
-	int height() {
+	inline int height() {
 		return height_;
 	}
 
@@ -114,7 +113,7 @@ public:
 	*
 	* /return The width in pixels
 	*/
-	int width() {
+	inline int width() {
 		return width_;
 	}
 
@@ -138,7 +137,7 @@ public:
 			* /return Reference to the colour
 			* /note The colours are ordered blue, green, red
 			*/
-			uint8_t& operator[] (int colour) {
+			inline uint8_t& operator[] (int colour) {
 				return colours[colour];
 			}
 
@@ -151,7 +150,9 @@ public:
 		* /param Width of the pixel
 		* /return An object that gives access to specific colours as members and through the [] operator
 		*/
-		Point& operator[] (int width) { return *reinterpret_cast<Point*>(data_ + width * 3); }
+		inline Point& operator[] (int width) {
+			return *reinterpret_cast<Point*>(data_ + width * 3);
+		}
 	};
 
 	/*!
@@ -161,7 +162,7 @@ public:
 	* /return An object with overloaded [] operator that returns an object representing the colour of pixel at that width that gives access to specific colours as members and through the [] operator
 	* /note The pixels are ordered from top to bottom (unlike in BMP), then from left to right, colours are ordered blue, green, red (like in BMP)
 	*/
-	subArray operator[] (int hei) {
+	inline subArray operator[] (int hei) {
 		return subArray(data_.get() + hei * width_* 3);
 	}
 
@@ -170,7 +171,7 @@ public:
 	*
 	* /note This is automatically returned by the destructor if the image isn't default-constructed and has a name
 	*/
-	void save() {
+	inline void save() {
 		struct BMPheader //BMP file header structure
 		{
 			uint32_t size; // Size of file
@@ -219,8 +220,7 @@ public:
 		FILE* file = fopen(name_.c_str(), "wb");
 		if (!file)
 		{
-			std::cout << "Could not write file" << std::endl;
-			return;
+			throw(std::runtime_error("Could not write file: " + name_));
 		}
 
 		// Write headers
