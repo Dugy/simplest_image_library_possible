@@ -60,8 +60,14 @@ public:
 
 		int size = 3 * width_;
 		data_ = std::make_unique<uint8_t[]>(size * height_);
-		for (int i = height_ - 1; i >= 0; i--)
-			fread(operator[] (i).data_, sizeof(unsigned char), size, file);
+		for (int i = height_ - 1; i >= 0; i--) {
+			auto line = operator[] (i);
+			for (int j = 0; j < width_; j++) {
+				auto& point = line[j];
+				for (int colour = 2; colour >= 0; colour--)
+					point[colour] = fgetc(file);
+				}
+			}
 		fclose(file);
 	}
 
@@ -124,9 +130,9 @@ public:
 	public:
 		union Point {
 			struct {
-				uint8_t blue;
-				uint8_t green;
 				uint8_t red;
+				uint8_t green;
+				uint8_t blue;
 			};
 			uint8_t colours[3];
 
@@ -135,23 +141,23 @@ public:
 			*
 			* /param The colour part of the pixel
 			* /return Reference to the colour
-			* /note The colours are ordered blue, green, red
+			* /note The colours are ordered red, green, blue
 			*/
 			inline uint8_t& operator[] (int colour) {
 				return colours[colour];
 			}
 
 			/*!
-			* /brief Set the colour of a pixel in one line
+			* /brief Set all parts of the pixel's colour in one line
 			*
-			* /param The blue component
-			* /param The green component
 			* /param The red component
+			* /param The green component
+			* /param The blue component
 			*/
-			void setColour(uint8_t blueValue, uint8_t greenValue, uint8_t redValue) {
-				blue = blueValue;
-				green = greenValue;
+			void setColour(uint8_t redValue, uint8_t greenValue, uint8_t blueValue) {
 				red = redValue;
+				green = greenValue;
+				blue = blueValue;
 			}
 
 			Point() = delete;
@@ -244,10 +250,12 @@ public:
 		// Write bitmap
 		for (int x = height_ - 1; x >= 0; x--)
 		{
+			auto line = operator[] (x);
 			for (int y = 0; y < width_; y++)
 			{
-				for (int colour = 0; colour < 3; colour++)
-					fwrite(&operator[] (x)[y][colour], 1, 1, file);
+				auto& point = line[y];
+				for (int colour = 2; colour >= 0; colour--)
+					fputc(point[colour], file);
 			}
 		}
 		fclose(file);
