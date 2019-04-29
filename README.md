@@ -116,7 +116,7 @@ public:
 		interrupted.front() = points[0].second;
 		interrupted.back() = points[2].second;
 		for (int i = 1; i < points[2].first - points[0].first; i++) {
-			interrupted[i] = (i < (points[1].first - points[0].first)) ? (direction * i + points[0].second) : (direction2 * (i - points[1].first) + points[2].second);
+			interrupted[i] = (i < (points[1].first - points[0].first)) ? (direction * i + points[0].second) : (direction2 * (i - points[1].first + points[0].first) + points[1].second);
 		}
 		if (uninterrupted[uninterrupted.size() / 2] > interrupted[interrupted.size() / 2])
 			uninterrupted.swap(interrupted); // Now we know the interrupted values are on the left
